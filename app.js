@@ -57,6 +57,22 @@ const ItemCtrl = (() => {
       return found;
     },
 
+    updateItem(name, calories) {
+      // Calories to number
+      calories = parseInt(calories);
+
+      let found = null;
+      // Loop through items
+      data.items.forEach(item => {
+        if (item.id === data.currentItem.id) {
+          item.name = name;
+          item.calories = calories;
+          found = item;
+        }
+      });
+      return found;
+    },
+
     setCurrentItem(item) {
       data.currentItem = item;
     },
@@ -90,6 +106,7 @@ const ItemCtrl = (() => {
 const UICtrl = (() => {
   const UISelectors = {
     itemList: '#item-list',
+    listItems: '#item-list li',
     addBtn: '.add-btn',
     updateBtn: '.update-btn',
     deleteBtn: '.delete-btn',
@@ -141,6 +158,10 @@ const UICtrl = (() => {
       `;
       // Append li to ul
       document.querySelector(UISelectors.itemList).appendChild(li);
+    },
+
+    updateListItem(item) {
+      let listItems = document.querySelectorAll(UISelectors.listItems);
     },
 
     clearInput() {
@@ -199,9 +220,22 @@ const App = ((ItemCtrl, UICtrl) => {
       .querySelector(UISelectors.addBtn)
       .addEventListener('click', itemAddSubmit);
 
+    // Disable submit on enter
+    document.addEventListener('keypress', e => {
+      if (e.keyCode === 13 || e.which === 13) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
     // Edit icon click event
     document
       .querySelector(UISelectors.itemList)
+      .addEventListener('click', itemEditClick);
+
+    // Update item event
+    document
+      .querySelector(UISelectors.updateBtn)
       .addEventListener('click', itemUpdateSubmit);
   };
 
@@ -233,8 +267,8 @@ const App = ((ItemCtrl, UICtrl) => {
     e.preventDefault();
   };
 
-  // Update item submit
-  const itemUpdateSubmit = e => {
+  // Click edit item
+  const itemEditClick = e => {
     if (e.target.classList.contains('edit-item')) {
       // get list item id (item-0, item-1)
       const listId = e.target.parentElement.parentElement.id;
@@ -254,6 +288,20 @@ const App = ((ItemCtrl, UICtrl) => {
       // Add item to form
       UICtrl.addItemToForm();
     }
+    e.preventDefault();
+  };
+
+  // Update item submit
+  const itemUpdateSubmit = e => {
+    // Get item input
+    const input = UICtrl.getItemInput();
+
+    // Update item
+    const updatedItem = ItemCtrl.updateItem(input.name, input.calories);
+
+    // Update UI
+    UICtrl.updateListItem(updatedItem);
+
     e.preventDefault();
   };
 
